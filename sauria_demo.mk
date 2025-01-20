@@ -33,4 +33,4 @@ hw-all:
 	$(MAKE) -B chs-hw-all
 	vlog $(SAURIA_ROOT)/pulp_platform/axi/src/axi_pkg.sv
 	vlog $(SAURIA_ROOT)/RTL/src/sauria_pkg.sv
-	vlog -f $(SAURIA_ROOT)/RTL/filelist.f
+	vlog -f $(SAURIA_ROOT)/RTL/filelist.f +define+DIR=$(SAURIA_ROOT)/pulp_platform
