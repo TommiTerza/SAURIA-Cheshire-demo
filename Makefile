@@ -7,8 +7,10 @@
 #
 # Info: Makefile of the SAURIA-Cheshire-demo project
 
-include sauria_demo.mk
+SCD_ROOT := $(shell realpath .)
+BENDER	 ?= bender -d $(SCD_ROOT)
 
 # Build the hw
-build:
-	
+all:
+
+include sauria_demo.mk
