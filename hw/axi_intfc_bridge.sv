@@ -10,8 +10,10 @@
  */
 
 module axi_intfc_bridge #(
-  // You can add parameters for ID/Data widths if needed,
-  // or rely on those defined inside the interface and structs.
+  /* Request struct of the AXI4 port */
+  parameter type req_t = logic,
+  /* Response struct of the AXI4 port */
+  parameter type resp_t = logic
 )(
   /* From the struct side: */
   input  req_t                axi_req_i,

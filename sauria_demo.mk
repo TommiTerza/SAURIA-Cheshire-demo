@@ -21,6 +21,15 @@ CHS_ROOT  := $(shell bender path cheshire)
 
 # SAURIA defines
 SAURIA_ROOT := $(shell bender path sauria)
+SAURIA_PULP_ROOT := $(SAURIA_ROOT)/pulp_platform
+SAURIA_RTL_ROOT := $(SAURIA_ROOT)/RTL
+SAURIA_INCLUDE_DIRS := +incdir+$(SAURIA_PULP_ROOT)/common_cells/include +incdir+$(SAURIA_PULP_ROOT)/axi/include
+
+# Sauria demo include directories
+SAURIA_DEMO_INCLUDE_DIR := +incdir+$(SAURIA_DEMO_ROOT)/hw/include \
+													 +incdir+$(SAURIA_PULP_ROOT)/axi/include \
+													 +incdir+$(SAURIA_PULP_ROOT)/common_cells/include \
+													 +incdir+$(CHS_ROOT)/hw/include/cheshire
 
 # Tools defines
 BENDER_ROOT ?= $(SAURIA_DEMO_ROOT)/.bender
@@ -30,7 +39,13 @@ include $(shell bender path cheshire)/cheshire.mk
 
 .PHONY: hw-all
 hw-all:
-	$(MAKE) -B chs-hw-all
-	vlog $(SAURIA_ROOT)/pulp_platform/axi/src/axi_pkg.sv
-	vlog $(SAURIA_ROOT)/RTL/src/sauria_pkg.sv
-	vlog -f $(SAURIA_ROOT)/RTL/filelist.f +define+DIR=$(SAURIA_ROOT)/pulp_platform
+	# $(MAKE) -B chs-hw-all
+	vlog $(SAURIA_PULP_ROOT)/axi/src/axi_pkg.sv
+	vlog $(SAURIA_RTL_ROOT)/src/sauria_pkg.sv
+
+	PULP_DIR=$(SAURIA_PULP_ROOT) RTL_DIR=$(SAURIA_RTL_ROOT) \
+	vlog -f $(SAURIA_RTL_ROOT)/filelist.f $(SAURIA_INCLUDE_DIRS)
+
+	vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
+	vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
+	vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv
