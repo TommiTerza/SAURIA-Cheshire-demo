@@ -30,7 +30,7 @@ include $(shell bender path cheshire)/cheshire.mk
 
 .PHONY: hw-all
 hw-all:
-    $(MAKE) -B chs-hw-all
-    vlog -f $(SAURIA_DEMO_ROOT)/pulp_platform/axi/src/axi_pkg.sv
-    vlog -f $(SAURIA_DEMO_ROOT)/RTL/src/sauria_pkg.sv
-    vlog -f $(SAURIA_DEMO_ROOT)/RTL/filelist.f
+	$(MAKE) -B chs-hw-all
+	vlog $(SAURIA_DEMO_ROOT)/pulp_platform/axi/src/axi_pkg.sv
+	vlog $(SAURIA_DEMO_ROOT)/RTL/src/sauria_pkg.sv
+	vlog -f $(SAURIA_DEMO_ROOT)/RTL/filelist.f
