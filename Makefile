@@ -7,5 +7,8 @@
 #
 # Info: Makefile of the SAURIA-Cheshire-demo project
 
-# Include the Cheshire Makefile
-include $(shell bender path cheshire)/cheshire.mk
+include sauria_demo.mk
+
+# Build the hw
+build:
+	

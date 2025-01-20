@@ -13,7 +13,21 @@ package:
     - "Tommaso Terzano <tommaso.terzano@polito.it>"
   
 dependencies:
-  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:    4a270afccf27bed49779d11d88e4bbb69d335c8a }
+  cheshire:
+    git: https://github.com/pulp-platform/cheshire
+    version: 0.2.0
   sauria:
     git: https://github.com/sromeo98/sauria
     rev: 56b87b6b6d29b6df4224481b45e64a8d435fdd70
+
+export_include_dirs:
+  - hw/include
+
+sources:
+  - hw/axi_intfc_bridge.sv
+  - hw/axi_lite_intfc_bridge.sv
+  - hw/sauria_demo_soc.sv
+
+  - target: sim
+    files:
+      - target/sim/fixture_sauria_demo_soc.sv
