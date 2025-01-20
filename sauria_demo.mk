@@ -8,7 +8,7 @@
 # Info: Makefile library of the SAURIA-Cheshire-demo project
 
 # Sauria demo project defines
-SAURIA_DEMO_ROOT    ?= $(shell bender path sauria_demo)
+SAURIA_DEMO_ROOT    ?= $(shell realpath .)
 SAURIA_DEMO_HW_DIR  := $(SAURIA_DEMO_ROOT)/hw
 SAURIA_DEMO_SW_DIR  := $(SAURIA_DEMO_ROOT)/sw
 SAURIA_DEMO_TGT_DIR := $(SAURIA_DEMO_ROOT)/target/
