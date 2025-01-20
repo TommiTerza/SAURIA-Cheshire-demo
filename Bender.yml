@@ -13,9 +13,7 @@ package:
     - "Tommaso Terzano <tommaso.terzano@polito.it>"
   
 dependencies:
-  cheshire:
-    git: https://github.com/pulp-platform/cheshire
-    rev: 3a8de913b1d3fa6834d516a3f16cc0a1f335ad5e
+  cheshire:           { git: https://github.com/pulp-platform/cheshire,           rev:    4a270afccf27bed49779d11d88e4bbb69d335c8a }
   sauria:
     git: https://github.com/sromeo98/sauria
     rev: 56b87b6b6d29b6df4224481b45e64a8d435fdd70
