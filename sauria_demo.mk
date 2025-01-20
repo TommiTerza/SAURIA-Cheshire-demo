@@ -28,9 +28,9 @@ BENDER_ROOT ?= $(SAURIA_DEMO_ROOT)/.bender
 # Include the Cheshire Makefile
 include $(shell bender path cheshire)/cheshire.mk
 
-# Build the hw
 .PHONY: hw-all
-hw-all: $(MAKE) -B chs-hw-all
-vlog -f $(SAURIA_DEMO_ROOT)/pulp_platform/axi/src/axi_pkg.sv
-vlog -f $(SAURIA_DEMO_ROOT)/RTL/src/sauria_pkg.sv
-vlog -f $(SAURIA_DEMO_ROOT)/RTL/filelist.f
+hw-all:
+    $(MAKE) -B chs-hw-all
+    vlog -f $(SAURIA_DEMO_ROOT)/pulp_platform/axi/src/axi_pkg.sv
+    vlog -f $(SAURIA_DEMO_ROOT)/RTL/src/sauria_pkg.sv
+    vlog -f $(SAURIA_DEMO_ROOT)/RTL/filelist.f
