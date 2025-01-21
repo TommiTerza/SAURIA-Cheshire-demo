@@ -43,9 +43,11 @@ hw-all:
 	vlog $(SAURIA_PULP_ROOT)/axi/src/axi_pkg.sv
 	vlog $(SAURIA_RTL_ROOT)/src/sauria_pkg.sv
 
+	# Compiling SAURIA core
 	PULP_DIR=$(SAURIA_PULP_ROOT) RTL_DIR=$(SAURIA_RTL_ROOT) \
 	vlog -f $(SAURIA_RTL_ROOT)/filelist.f $(SAURIA_INCLUDE_DIRS)
 
+	# Compiling the SAURIA demo
 	vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
 	vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
 	vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv

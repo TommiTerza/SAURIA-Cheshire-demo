@@ -10,7 +10,7 @@
          has the same ports as the Cheshire MCU, to facilitate integration.
  */
 
- module sauria_demo_top # (
+ module sauria_demo_top import sauria_demo_pkg::*; (
   parameter type axi_ext_llc_req_t  = logic,
   parameter type axi_ext_llc_rsp_t  = logic,
   parameter type axi_ext_mst_req_t  = logic,
@@ -122,8 +122,6 @@
 
   /* Imports and parameters */
 
-  import sauria_demo_pkg::*;
-
   `include "axi/typedef.svh"
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
@@ -135,7 +133,31 @@
 
   /* Signals declaration */
 
-    
+  /* Sauria done interrupt signal */
+  logic sauria_doneintr;
+
+  /* AXI lite interface */
+  AXI_LITE #(
+  .AXI_ADDR_WIDTH (CFG_AXI_ADDR_WIDTH),
+  .AXI_DATA_WIDTH (CFG_AXI_DATA_WIDTH)
+  ) sauria_cfg_port();
+
+  /* AXI interface */
+  AXI_BUS #(
+    .AXI_ADDR_WIDTH (DATA_AXI_ADDR_WIDTH),
+    .AXI_DATA_WIDTH (DATA_AXI_DATA_WIDTH),
+    .AXI_ID_WIDTH   (DATA_AXI_ID_WIDTH+1),
+    .AXI_USER_WIDTH (1) // Unused, but 0 can cause compilation errors
+  ) sauria_mem_port();
+
+  /* Cheshire AXI-lite-like (regintfc) signals */
+  reg_req_t cheshire_ext_reg_req;
+  reg_rsp_t cheshire_ext_reg_rsp;
+
+  /* Cheshire AXI signals*/
+  axi_ext_slv_req_t cheshire_ext_slv_req_t;
+  axi_ext_slv_rsp_t cheshire_ext_slv_rsp_t;
+
   /*_________________________________________________________________________________________________________________________________ */
 
   /* Module instantiation */
@@ -150,9 +172,9 @@
   ) sauria_core_i(
       .i_clk      (clk_i),
       .i_rstn     (rst_ni),
-      .cfg_slv    (sauria_cfg_port_slv),
+      .cfg_slv    (sauria_cfg_port),
       .mem_slv    (sauria_mem_port),
-      .o_doneintr (sauria_doneintr_o)
+      .o_doneintr (sauria_doneintr)
   );
 
   /* Cheshire
@@ -176,16 +198,16 @@
     .boot_mode_i,
     .rtc_i,
     // External AXI LLC (DRAM) port
-    .axi_llc_mst_req_o (axi_llc_mst_req),
-    .axi_llc_mst_rsp_i (axi_llc_mst_rsp),
+    .axi_llc_mst_req_o,
+    .axi_llc_mst_rsp_i,
     // External AXI crossbar ports
-    .axi_ext_mst_req_i (axi_ext_mst_req),
-    .axi_ext_mst_rsp_o (axi_ext_mst_rsp),
-    .axi_ext_slv_req_o (axi_ext_slv_req),
-    .axi_ext_slv_rsp_i (axi_ext_slv_rsp),
+    .axi_ext_mst_req_i,
+    .axi_ext_mst_rsp_o,
+    .axi_ext_slv_req_o (cheshire_ext_slv_req_t),
+    .axi_ext_slv_rsp_i (cheshire_ext_slv_rsp_t),
     // External reg demux slaves
-    .reg_ext_slv_req_o (ext_reg_req),
-    .reg_ext_slv_rsp_i (ext_reg_rsp),
+    .reg_ext_slv_req_o (cheshire_ext_reg_req),
+    .reg_ext_slv_rsp_i (cheshire_ext_reg_rsp),
     // Interrupts from external devices
     .intr_ext_i,
     .intr_ext_o,
@@ -252,10 +274,10 @@
    */
   axi_intfc_bridge axi_bridge_i (
     // struct side
-    .axi_req_i (my_req),
-    .axi_rsp_o (my_rsp),
+    .axi_req_i (cheshire_ext_slv_req_t),
+    .axi_rsp_o (cheshire_ext_slv_rsp_t),
     // interface-based side
-    .axi_if (axi_if_inst.Slave)
+    .axi_if (sauria_mem_port.Slave)
   );
 
   /* AXI4 Lite interface bridge module
@@ -264,10 +286,10 @@
    */
   axi_intfc_bridge axi_lite_bridge_i (
     // struct side
-    .axil_req_i (my_req),
-    .axil_rsp_o (my_rsp),
+    .axil_req_i (cheshire_ext_reg_req),
+    .axil_rsp_o (cheshire_ext_reg_rsp),
     // interface-based side
-    .axil_if (axi_if_inst.Slave)
+    .axil_if (sauria_cfg_port.Slave)
   );
 
  endmodule

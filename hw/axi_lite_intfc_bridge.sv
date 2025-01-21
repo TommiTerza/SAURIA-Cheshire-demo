@@ -16,11 +16,11 @@
 module axi_lite_intfc_bridge #(
   parameter int unsigned AXI_ADDR_WIDTH = 32,
   parameter int unsigned AXI_DATA_WIDTH = 32,
-  
+
   /* Request struct of the AXI4 port */
   parameter type req_t = logic,
   /* Response struct of the AXI4 port */
-  parameter type resp_t = logic
+  parameter type rsp_t = logic
 )(
   /* From the structure-based AXI-Lite side */
   input  req_t    axil_req_i,  // {addr, write, wdata, wstrb, valid}
