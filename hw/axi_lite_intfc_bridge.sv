@@ -122,8 +122,8 @@ module axi_lite_intfc_bridge #(
 
   // "error" if b_resp or r_resp is not OKAY (0). 
   // Typically, axi_pkg::resp_t is 2 bits (OKAY=2'b00, SLVERR=2'b10, DECERR=2'b11, etc.).
-  wire logic b_error = (axil_if.b_valid && axil_if.b_resp != axi_pkg::OKAY);
-  wire logic r_error = (axil_if.r_valid && axil_if.r_resp != axi_pkg::OKAY);
+  wire logic b_error = (axil_if.b_valid && axil_if.b_resp != axi_pkg::RESP_OKAY);
+  wire logic r_error = (axil_if.r_valid && axil_if.r_resp != axi_pkg::RESP_OKAY);
 
   assign axil_rsp_o.error = (b_error || r_error);
 
