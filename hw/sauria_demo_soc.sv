@@ -10,7 +10,7 @@
          has the same ports as the Cheshire MCU, to facilitate integration.
  */
 
- module sauria_demo_top import sauria_demo_pkg::*; (
+ module sauria_demo_soc import sauria_demo_pkg::*; (
   parameter type axi_ext_llc_req_t  = logic,
   parameter type axi_ext_llc_rsp_t  = logic,
   parameter type axi_ext_mst_req_t  = logic,

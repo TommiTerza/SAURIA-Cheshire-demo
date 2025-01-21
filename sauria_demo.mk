@@ -50,4 +50,4 @@ hw-all:
 	# Compiling the SAURIA demo
 	vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
 	vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
-	vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv
+	vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
