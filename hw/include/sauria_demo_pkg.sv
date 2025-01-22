@@ -11,7 +11,7 @@
 
 package sauria_demo_pkg;
 
-  `include "vendor/cheshire/hw/include/cheshire/typedef.svh"
+  `include "cheshire/typedef.svh"
 
   import cheshire_pkg::*;
 

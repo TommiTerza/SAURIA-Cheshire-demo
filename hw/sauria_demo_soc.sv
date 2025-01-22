@@ -10,7 +10,7 @@
          has the same ports as the Cheshire MCU, to facilitate integration.
  */
 
- module sauria_demo_soc import sauria_demo_pkg::*; (
+ module sauria_demo_soc import sauria_demo_pkg::*; import cheshire_pkg::*; #(
   parameter type axi_ext_llc_req_t  = logic,
   parameter type axi_ext_llc_rsp_t  = logic,
   parameter type axi_ext_mst_req_t  = logic,
@@ -127,7 +127,7 @@
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
 
-  `CHESHIRE_TYPEDEF_ALL(csh_, Cfg)
+  `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
   /*_________________________________________________________________________________________________________________________________ */
 
@@ -181,17 +181,17 @@
    * Additional info: the axi_llc_mst_req and axi_llc_mst_rsp signals are needed for the testbench, but are not used in the design.
    */
   cheshire_soc #(
-    .Cfg (CheshireCfg),
-    .ExtHartinfo ('0),
-    .axi_ext_llc_req_t (cheshire_axi_ext_llc_req_t),
-    .axi_ext_llc_rsp_t (cheshire_axi_ext_llc_rsp_t),
-    .axi_ext_mst_req_t (cheshire_axi_ext_mst_req_t),
-    .axi_ext_mst_rsp_t (cheshire_axi_ext_mst_rsp_t),
-    .axi_ext_slv_req_t (cheshire_axi_ext_slv_req_t),
-    .axi_ext_slv_rsp_t (cheshire_axi_ext_slv_rsp_t),
-    .reg_ext_req_t (cheshire_reg_ext_req_t),
-    .reg_ext_rsp_t (cheshire_reg_ext_rsp_t)
-  ) cheshire_soc_i     (
+    .Cfg(Cfg),
+    .ExtHartinfo('0),
+    .axi_ext_llc_req_t(axi_ext_llc_req_t),
+    .axi_ext_llc_rsp_t(axi_ext_llc_rsp_t),
+    .axi_ext_mst_req_t(axi_ext_mst_req_t),
+    .axi_ext_mst_rsp_t(axi_ext_mst_rsp_t),
+    .axi_ext_slv_req_t(axi_ext_slv_req_t),
+    .axi_ext_slv_rsp_t(axi_ext_slv_rsp_t),
+    .reg_ext_req_t(reg_ext_req_t),
+    .reg_ext_rsp_t(reg_ext_rsp_t)
+  ) cheshire_soc_i (
     .clk_i,
     .rst_ni,
     .test_mode_i,

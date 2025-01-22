@@ -19,6 +19,9 @@ SAURIA_DEMO_VSIM_DIR := $(SAURIA_DEMO_TGT_DIR)/sim/vsim
 # Cheshire defines
 CHS_ROOT  := $(shell bender path cheshire)
 
+# Regint defines
+REGINTFC_ROOT  := $(shell bender path register_interface)
+
 # SAURIA defines
 SAURIA_ROOT := $(shell bender path sauria)
 SAURIA_PULP_ROOT := $(SAURIA_ROOT)/pulp_platform
@@ -29,7 +32,8 @@ SAURIA_INCLUDE_DIRS := +incdir+$(SAURIA_PULP_ROOT)/common_cells/include +incdir+
 SAURIA_DEMO_INCLUDE_DIR := +incdir+$(SAURIA_DEMO_ROOT)/hw/include \
 													 +incdir+$(SAURIA_PULP_ROOT)/axi/include \
 													 +incdir+$(SAURIA_PULP_ROOT)/common_cells/include \
-													 +incdir+$(CHS_ROOT)/hw/include/cheshire
+													 +incdir+$(CHS_ROOT)/hw/include \
+													 +incdir+$(REGINTFC_ROOT)/include
 
 # Tools defines
 BENDER_ROOT ?= $(SAURIA_DEMO_ROOT)/.bender
@@ -39,15 +43,25 @@ include $(shell bender path cheshire)/cheshire.mk
 
 .PHONY: hw-all
 hw-all:
-	# $(MAKE) -B chs-hw-all
+	# Compiling Cheshire
+	$(MAKE) -B chs-hw-all
+	$(MAKE) -B chs-sim-all
+	vsim -c -do "source $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl; quit" > chs_compile_log.txt
+
+	# Compiling SAURIA core
 	vlog $(SAURIA_PULP_ROOT)/axi/src/axi_pkg.sv
 	vlog $(SAURIA_RTL_ROOT)/src/sauria_pkg.sv
 
-	# Compiling SAURIA core
 	PULP_DIR=$(SAURIA_PULP_ROOT) RTL_DIR=$(SAURIA_RTL_ROOT) \
 	vlog -f $(SAURIA_RTL_ROOT)/filelist.f $(SAURIA_INCLUDE_DIRS)
 
-	# Compiling the SAURIA demo
+	# Compiling the SAURIA demo project
+	vlog $(CHS_ROOT)/hw/cheshire_pkg.sv
+	vlog $(SAURIA_DEMO_ROOT)/hw/include/sauria_demo_pkg.sv $(SAURIA_DEMO_INCLUDE_DIR)
 	vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
 	vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
 	vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
+
+.PHONY: sw-all
+sw-all:
+	$(MAKE) -B chs-sw-all
