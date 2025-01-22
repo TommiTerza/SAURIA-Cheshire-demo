@@ -19,15 +19,3 @@ dependencies:
   sauria:
     git: https://github.com/sromeo98/sauria
     rev: 11651fbc0eb939706722382bc8b33c666f2308c2
-
-export_include_dirs:
-  - hw/include
-
-sources:
-  - hw/axi_intfc_bridge.sv
-  - hw/axi_lite_intfc_bridge.sv
-  - hw/sauria_demo_soc.sv
-
-  - target: sim
-    files:
-      - target/sim/fixture_sauria_demo_soc.sv
