@@ -143,7 +143,7 @@
   AXI_LITE #(
   .AXI_ADDR_WIDTH (CFG_AXI_ADDR_WIDTH),
   .AXI_DATA_WIDTH (CFG_AXI_DATA_WIDTH)
-  ) sauria_cfg_port();
+  ) sauria_cfg_port_mst(), sauria_cfg_port_slv();
 
   /* AXI interface */
   AXI_BUS #(
@@ -151,7 +151,7 @@
     .AXI_DATA_WIDTH (DATA_AXI_DATA_WIDTH),
     .AXI_ID_WIDTH   (DATA_AXI_ID_WIDTH+1),
     .AXI_USER_WIDTH (1) // Unused, but 0 can cause compilation errors
-  ) sauria_mem_port();
+  ) sauria_mem_port_mst(), sauria_mem_port_slv();
 
   /* Cheshire AXI-lite-like (regintfc) signals */
   reg_req_t cheshire_ext_reg_req;
@@ -160,6 +160,10 @@
   /* Cheshire AXI signals*/
   axi_ext_slv_req_t cheshire_ext_slv_req;
   axi_ext_slv_rsp_t cheshire_ext_slv_rsp;
+  
+  /* Connection of slave (sauria core) to master interfaces (axi_intf_to_regs) */
+  `AXI_LITE_ASSIGN(sauria_cfg_port_slv, sauria_cfg_port_mst)
+  `AXI_ASSIGN(sauria_mem_port_slv, sauria_mem_port_mst)
 
   /*_________________________________________________________________________________________________________________________________ */
 
@@ -175,8 +179,8 @@
   ) sauria_core_i(
       .i_clk      (clk_i),
       .i_rstn     (rst_ni),
-      .cfg_slv    (sauria_cfg_port),
-      .mem_slv    (sauria_mem_port),
+      .cfg_slv    (sauria_cfg_port_slv),
+      .mem_slv    (sauria_mem_port_slv),
       .o_doneintr (sauria_doneintr)
   );
 
@@ -275,26 +279,34 @@
    * This module is necessary because SAURIA's core works with an AXI interface, while the Cheshire
    * project is built using structures to handle the AXI protocol.
    */
-  axi_intfc_bridge axi_bridge_i (
+  axi_intfc_bridge # (
+    .axi_req_t(axi_ext_slv_req_t),
+    .axi_resp_t(axi_ext_slv_rsp_t)
+  ) axi_bridge_i (
     // struct side
     .axi_req_i (cheshire_ext_slv_req),
     .axi_rsp_o (cheshire_ext_slv_rsp),
     // interface-based side
-    .axi_if (sauria_mem_port.Slave)
+    .axi_o (sauria_mem_port_mst)
   );
 
   /* AXI4 Lite interface bridge module
    * Same idea as before, but for AXI4 Lite protocol. More complex module, as there isn't a direct
    * correspondence between the interface-based of SAURIA and the register interface of Cheshire.
    */
-  axi_lite_to_reg axi_lite_to_reg_intf (
+  reg_to_axi_lite_intf #(
+  .ADDR_WIDTH(CFG_AXI_ADDR_WIDTH),
+  .DATA_WIDTH(CFG_AXI_DATA_WIDTH),
+  .reg_req_t(reg_req_t), //.reg_req_t(reg_pkg::reg_req_t),
+  .reg_rsp_t(reg_rsp_t)  //.reg_rsp_t(reg_pkg::reg_rsp_t)
+  ) axi_lite_bridge_i (
     .clk_i,
     .rst_ni,
     // struct side
     .reg_req_o (cheshire_ext_reg_req),
     .reg_rsp_o (cheshire_ext_reg_rsp),
     // interface-based side
-    .axi_i (sauria_cfg_port.Slave)
+    .axi_o (sauria_cfg_port_mst)
   );
 
  endmodule
