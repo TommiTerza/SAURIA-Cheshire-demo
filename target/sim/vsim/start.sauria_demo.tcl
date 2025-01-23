@@ -8,6 +8,18 @@
 
 set TESTBENCH tb_sauria_demo_soc
 
+# Set full path to c++ compiler.
+if { ![info exists CXX_PATH] } {
+    if { ![info exists CXX] } {
+        if { ![info exists ::env(CXX)] } {
+            set CXX "g++"
+        } else {
+            set CXX $::env(CXX)
+        }
+    }
+    set CXX_PATH [exec which $CXX]
+}
+
 # Set voptargs only if not already set to make overridable.
 # Default on fast simulation flags.
 if {![info exists VOPTARGS]} {
@@ -15,7 +27,7 @@ if {![info exists VOPTARGS]} {
     set VOPTARGS "-O5 +noacc=p+cheshire_soc." 
 }
 
-set flags "-permissive -suppress 3009 -suppress 8386 -suppress 12110 -suppress 1323 -suppress 2912 -error 7 "
+set flags "-voptargs=-permissive -suppress 12110 -suppress 3009 -suppress 8386 -suppress 1323 -suppress 2912 -error 7 -cpppath ${CXX_PATH}"
 
 set pargs ""
 if {[info exists BOOTMODE]} { append pargs "+BOOTMODE=${BOOTMODE} " }

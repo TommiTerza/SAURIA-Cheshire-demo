@@ -14,117 +14,219 @@
  */
 
 module axi_lite_intfc_bridge #(
-  parameter int unsigned AXI_ADDR_WIDTH = 32,
-  parameter int unsigned AXI_DATA_WIDTH = 32,
-
-  /* Request struct of the AXI4 port */
-  parameter type req_t = logic,
-  /* Response struct of the AXI4 port */
-  parameter type rsp_t = logic
+  parameter int unsigned DataWidth = 32,
+  // RegBus request type (must match your system's definition)
+  parameter type reg_req_t = logic,
+  // RegBus response type
+  parameter type reg_rsp_t = logic,
+  // AXI-Lite request type
+  parameter type axi_lite_req_t = logic,
+  // AXI-Lite response type
+  parameter type axi_lite_rsp_t = logic
 )(
-  /* From the structure-based AXI-Lite side */
-  input  req_t    axil_req_i,  // {addr, write, wdata, wstrb, valid}
-  output rsp_t    axil_rsp_o,  // {rdata, error, ready}
+  //----------------------------------------------------------------------------
+  // Clocks and Resets
+  //----------------------------------------------------------------------------
+  input  logic        clk_i,
+  input  logic        rst_ni,
 
-  /* To the interface-based AXI-Lite side (in Slave mode) */
-  AXI_LITE.Slave  axil_if
+  //----------------------------------------------------------------------------
+  // AXI-Lite side (Slave interface)
+  //   An external AXI-Lite Master will drive these requests (axi_lite_req_i),
+  //   and we must produce responses (axi_lite_rsp_o).
+  //----------------------------------------------------------------------------
+  input  axi_lite_req_t axi_lite_req_i,
+  output axi_lite_rsp_t axi_lite_rsp_o,
+
+  //----------------------------------------------------------------------------
+  // RegBus side
+  //   We produce a single read/write command (reg_req_o) from each AXI-Lite
+  //   transaction, and we wait for a reg_rsp_i to finalize the transaction.
+  //----------------------------------------------------------------------------
+  output reg_req_t reg_req_o,
+  input  reg_rsp_t reg_rsp_i
 );
 
-  /*----------------------------------------------------------------------
-   * Local parameters & typedefs 
-   * (These come from the interface, but you could also re-declare them here)
-   *---------------------------------------------------------------------*/
-  localparam int unsigned STRB_WIDTH = AXI_DATA_WIDTH / 8;
+  //----------------------------------------------------------------------------
+  // Local signals for transaction tracking
+  //----------------------------------------------------------------------------
+  // We'll store whether we have an ongoing write or read request until the
+  // regbus side has responded. This is a basic approach: we block further
+  // requests until the transaction completes.
+  // 
+  // If your system needs more concurrency, consider a small state machine.
+  //----------------------------------------------------------------------------
+  logic write_pending_q, read_pending_q;
 
-  /*----------------------------------------------------------------------
-   * Default tie-offs or assumptions (PROT, etc.)
-   * In a real design, you might configure these or tie them more carefully.
-   *---------------------------------------------------------------------*/
-  // Set the protection bits to zero, 3'b000 indicates "normal, non-secure, data access".
-  localparam axi_pkg::prot_t DEFAULT_PROT = '0; 
+  // Example: latch AW vs. AR addresses, then wait for W data or regbus response
+  // For brevity, we show a single-cycle approach. 
+  // For actual AXI-Lite compliance, you might handle handshake stalls carefully.
 
-  /* Write Address Channel (AW)
-   * If we're doing a write (req.write=1, req.valid=1), drive AW with req.addr.
-   */
-  assign axil_if.aw_addr  = (axil_req_i.write && axil_req_i.valid)
-                            ? axil_req_i.addr 
-                            : '0;
+  //----------------------------------------------------------------------------
+  // AXI-Lite: "aw_valid" => we have a write address, "w_valid" => write data
+  // AXI-Lite: "ar_valid" => we have a read address
+  //
+  // We combine address + data into reg_req_o, then wait for reg_rsp_i.
+  //----------------------------------------------------------------------------
 
-  assign axil_if.aw_prot  = DEFAULT_PROT;
-  
-  /* For a basic bridging, AW valid is asserted if it's a valid write request. */
-  assign axil_if.aw_valid = (axil_req_i.write && axil_req_i.valid);
+  // Write address handshake (AW)
+  // - If aw_valid=1 & aw_ready=1, capture address and mark write pending
+  // - In a minimal design, we might tie aw_ready high if no transaction is pending
+  assign axi_lite_rsp_o.aw_ready = ~write_pending_q & ~read_pending_q;
 
-  /* The interface drives aw_ready out. We do not gate it here.
-  We won't wait for aw_ready to go high before driving w_valid. 
-  This is a simplistic approach (no handshake stall).
-  If you need full handshake correctness, add a small state machine. */
-  
-  /*----------------------------------------------------------------------
-   * Write Data Channel (W)
-   * If we're doing a write, drive w_data and w_strb.
-   *---------------------------------------------------------------------*/
-  assign axil_if.w_data  = (axil_req_i.write && axil_req_i.valid)
-                           ? axil_req_i.wdata
-                           : '0;
+  // Write data handshake (W)
+  // - If w_valid=1 & w_ready=1, we then finalize the reg_req_o
+  // - Similarly, we might tie w_ready to the same condition
+  assign axi_lite_rsp_o.w_ready  = ~write_pending_q & ~read_pending_q;
 
-  assign axil_if.w_strb  = (axil_req_i.write && axil_req_i.valid)
-                           ? axil_req_i.wstrb
-                           : '0;
+  // Write response (B)
+  // - We produce b_valid once regbus indicates "ready"
+  // - The response "b_resp" is an error if reg_rsp_i.error=1
+  //
+  // A single transaction approach: b_valid is high once we see reg_rsp_i.ready for a write
+  // and we have a pending write.
+  assign axi_lite_rsp_o.b_valid = write_pending_q & reg_rsp_i.ready;
+  assign axi_lite_rsp_o.b.resp  = (reg_rsp_i.error) ? axi_pkg::RESP_SLVERR 
+                                                    : axi_pkg::RESP_OKAY;
 
-  // w_valid goes high when we are doing a write transaction
-  assign axil_if.w_valid = (axil_req_i.write && axil_req_i.valid);
+  // The master sets b_ready to 1 when it accepts the response, so we can clear.
+  wire logic clear_write = axi_lite_rsp_o.b_valid & axi_lite_req_i.b_ready;
 
-  /* We tie w_ready out to nothing special, 
-   * but the interface can de-assert w_ready if it stalls data acceptance.
-   */
+  //----------------------------------------------------------------------------
+  // Read address handshake (AR)
+  // - If ar_valid=1 & ar_ready=1, capture address and mark read pending
+  // - Tie ar_ready high if no transaction is pending
+  assign axi_lite_rsp_o.ar_ready = ~write_pending_q & ~read_pending_q;
 
-  /* Write Response Channel (B)
-   * We assume any time a write is in flight, we'll accept b_valid immediately. 
-   * If we have a valid write request, we tie b_ready to 1 so we accept any response.
-   * Some designs might tie b_ready only while that transaction is outstanding.
-   * But for simplicity, keep b_ready high if we are "in a write request".
-   */
-  assign axil_if.b_ready = 1'b1;
+  // Read data (R)
+  // - We produce r_valid once regbus indicates "ready" for a read transaction
+  // - r_data is from reg_rsp_i.rdata, r_resp depends on reg_rsp_i.error
+  assign axi_lite_rsp_o.r_valid       = read_pending_q & reg_rsp_i.ready;
+  assign axi_lite_rsp_o.r.data       = reg_rsp_i.rdata;
+  assign axi_lite_rsp_o.r.resp       = (reg_rsp_i.error) ? axi_pkg::RESP_SLVERR 
+                                                         : axi_pkg::RESP_OKAY;
 
-  /* Read Address Channel (AR)
-   * If we're doing a read (req.write=0, req.valid=1), drive AR with req.addr. 
-   */
-  assign axil_if.ar_addr = (!axil_req_i.write && axil_req_i.valid)
-                           ? axil_req_i.addr
-                           : '0;
+  // The master sets r_ready=1 to accept the read data, so we can clear read pending
+  wire logic clear_read = axi_lite_rsp_o.r_valid & axi_lite_req_i.r_ready;
 
-  assign axil_if.ar_prot = DEFAULT_PROT;
+  //----------------------------------------------------------------------------
+  // Registers for pending states
+  //----------------------------------------------------------------------------
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      write_pending_q <= 1'b0;
+      read_pending_q  <= 1'b0;
+    end
+    else begin
+      // If we see aw_valid & aw_ready => new write request
+      if (axi_lite_req_i.aw_valid & axi_lite_rsp_o.aw_ready) begin
+        write_pending_q <= 1'b1;
+      end
+      // Clear after the B channel handshake completes
+      else if (clear_write) begin
+        write_pending_q <= 1'b0;
+      end
 
-  // ar_valid goes high when we are doing a read transaction
-  assign axil_if.ar_valid = (!axil_req_i.write && axil_req_i.valid);
+      // If we see ar_valid & ar_ready => new read request
+      if (axi_lite_req_i.ar_valid & axi_lite_rsp_o.ar_ready) begin
+        read_pending_q <= 1'b1;
+      end
+      // Clear after the R channel handshake
+      else if (clear_read) begin
+        read_pending_q <= 1'b0;
+      end
+    end
+  end
 
-  /* Read Data Channel (R)
-   * We'll tie r_ready=1 so we always accept read data immediately.
-   */
-  assign axil_if.r_ready = 1'b1;
+  //----------------------------------------------------------------------------
+  // Combine AW+W into a single regbus request
+  // For a minimal approach, we only build reg_req_o once we see both AW & W
+  // valid & handshake. In a real design, you might store AW address on AW handshake
+  // and store W data on W handshake. This simple code just merges them if they
+  // appear in the same cycle. 
+  // If they're separate cycles, you need a small pipeline or queue.
+  //----------------------------------------------------------------------------
+  wire logic do_write = (axi_lite_req_i.aw_valid & axi_lite_rsp_o.aw_ready) 
+                     & (axi_lite_req_i.w_valid  & axi_lite_rsp_o.w_ready);
 
-  /* Response Back to Structure
-   *   - axil_rsp_o.rdata = r_data if read transaction
-   *   - axil_rsp_o.error = set if b_resp or r_resp != OKAY
-   *   - axil_rsp_o.ready = 1 if either a write or read completed
-   */
+  // Similarly, do_read is set on ar_valid & ar_ready
+  wire logic do_read  = (axi_lite_req_i.ar_valid & axi_lite_rsp_o.ar_ready);
 
-  // rdata is valid only if r_valid=1 (meaning a read completed).
-  // If it was a write transaction, there's no read data, so we can tie 0 or keep last data.
-  assign axil_rsp_o.rdata = (axil_if.r_valid) 
-                            ? axil_if.r_data 
-                            : '0;
+  // The reg_req_t might have fields: addr, write, wdata, wstrb, valid (example)
+  assign reg_req_o.addr   = do_write ? axi_lite_req_i.aw.addr 
+                         : do_read  ? axi_lite_req_i.ar.addr 
+                         : '0;
+  assign reg_req_o.write  = do_write;
+  assign reg_req_o.wdata  = axi_lite_req_i.w.data;
+  assign reg_req_o.wstrb  = axi_lite_req_i.w.strb;
+  assign reg_req_o.valid  = do_write | do_read;
 
-  // For either a read or a write, we consider the transaction "done" if we see b_valid or r_valid.
-  // b_valid is the write response, r_valid is the read data response.
-  assign axil_rsp_o.ready = (axil_if.b_valid || axil_if.r_valid);
+endmodule
 
-  // "error" if b_resp or r_resp is not OKAY (0). 
-  // Typically, axi_pkg::resp_t is 2 bits (OKAY=2'b00, SLVERR=2'b10, DECERR=2'b11, etc.).
-  wire logic b_error = (axil_if.b_valid && axil_if.b_resp != axi_pkg::RESP_OKAY);
-  wire logic r_error = (axil_if.r_valid && axil_if.r_resp != axi_pkg::RESP_OKAY);
 
-  assign axil_rsp_o.error = (b_error || r_error);
+//----------------------------------------------------------------------------
+// Interface wrapper: if your code expects an AXI_LITE interface in Slave mode
+// and your system uses reg_req_t/reg_rsp_t, do something like this:
+//----------------------------------------------------------------------------
+module axi_lite_to_reg_intf #(
+  parameter int ADDR_WIDTH = 32,
+  parameter int DATA_WIDTH = 32,
+  // RegBus request/response types
+  parameter type reg_req_t = logic,
+  parameter type reg_rsp_t = logic
+)(
+  input  logic       clk_i,
+  input  logic       rst_ni,
+  // RegBus
+  output reg_req_t   reg_req_o,
+  input  reg_rsp_t   reg_rsp_i,
+  // AXI-Lite interface in Slave mode
+  AXI_LITE.Slave     axi_i
+);
+
+  //------------------------------------------------------------------------------
+  // Generate AXI-Lite request/response structs via macros
+  //  e.g. if you want an AW/W/AR struct, etc. 
+  //------------------------------------------------------------------------------
+  localparam int STRB_WIDTH = DATA_WIDTH / 8;
+
+  typedef logic [ADDR_WIDTH-1:0] addr_t;
+  typedef logic [DATA_WIDTH-1:0] data_t;
+  typedef logic [STRB_WIDTH-1:0] strb_t;
+
+  `AXI_LITE_TYPEDEF_AW_CHAN_T(aw_chan_t, addr_t)
+  `AXI_LITE_TYPEDEF_W_CHAN_T (w_chan_t, data_t, strb_t)
+  `AXI_LITE_TYPEDEF_B_CHAN_T (b_chan_t)
+  `AXI_LITE_TYPEDEF_AR_CHAN_T(ar_chan_t, addr_t)
+  `AXI_LITE_TYPEDEF_R_CHAN_T (r_chan_t, data_t)
+  `AXI_LITE_TYPEDEF_REQ_T(axi_lite_req_t, aw_chan_t, w_chan_t, ar_chan_t)
+  `AXI_LITE_TYPEDEF_RESP_T(axi_lite_rsp_t, b_chan_t, r_chan_t)
+
+  // Local AXI struct signals 
+  axi_lite_req_t local_req;
+  axi_lite_rsp_t local_rsp;
+
+  // Assign from interface => local_req
+  `AXI_LITE_ASSIGN_TO_REQ(local_req, axi_i)
+
+  // Assign local_rsp => interface
+  `AXI_LITE_ASSIGN_FROM_RESP(axi_i, local_rsp)
+
+  // Output signals to the regbus bridging logic
+  // (We use the bridging module defined above: axi_lite_to_reg)
+  axi_lite_intfc_bridge #(
+    .DataWidth      (DATA_WIDTH),
+    .reg_req_t      (reg_req_t),
+    .reg_rsp_t      (reg_rsp_t),
+    .axi_lite_req_t (axi_lite_req_t),
+    .axi_lite_rsp_t (axi_lite_rsp_t)
+  ) i_axi_lite_to_reg (
+    .clk_i         (clk_i),
+    .rst_ni        (rst_ni),
+    .axi_lite_req_i(local_req),
+    .axi_lite_rsp_o(local_rsp),
+    .reg_req_o     (reg_req_o),
+    .reg_rsp_i     (reg_rsp_i)
+  );
 
 endmodule
