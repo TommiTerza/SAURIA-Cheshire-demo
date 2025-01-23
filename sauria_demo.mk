@@ -78,7 +78,7 @@ hw-demo:
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
-	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/target/sim/src/fixture_sauria_demo.sv $(SAURIA_DEMO_INCLUDE_DIR)
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/target/sim/src/fixture_sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/target/sim/src/tb_sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
 
 .PHONY: sw

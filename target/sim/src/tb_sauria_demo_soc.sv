@@ -15,7 +15,7 @@ module tb_sauria_demo_soc #(
   parameter bit          UseDramSys  = 1'b0
 );
 
-  fixture_sauria_soc #(
+  fixture_sauria_demo_soc #(
     .SelectedCfg  (SelectedCfg),
     .UseDramSys   (UseDramSys)
   ) fix();
