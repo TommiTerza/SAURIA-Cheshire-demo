@@ -6,7 +6,7 @@
  
 # Info: Tcl script to start the simulation of the SAURIA demonstrator.
 
-set TESTBENCH tb_sauria_demo
+set TESTBENCH tb_sauria_demo_soc
 
 # Set voptargs only if not already set to make overridable.
 # Default on fast simulation flags.

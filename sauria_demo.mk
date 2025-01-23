@@ -62,20 +62,24 @@ hw-sauria:
 	# Compiling SAURIA core
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_PULP_ROOT)/axi/src/axi_pkg.sv
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_RTL_ROOT)/src/sauria_pkg.sv
-
-.PHONY: hw-demo
-hw-demo:
+	
 	# Preprocess the file list
 	cd $(SAURIA_DEMO_VSIM_DIR) && sed "s|\$${PULP_DIR}|$(SAURIA_PULP_ROOT)|g" $(SAURIA_RTL_ROOT)/filelist.f > prepreprocessed_filelist.f
 	cd $(SAURIA_DEMO_VSIM_DIR) && sed "s|\$${RTL_DIR}|$(SAURIA_RTL_ROOT)|g" prepreprocessed_filelist.f > preprocessed_filelist.f
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog -f preprocessed_filelist.f $(SAURIA_INCLUDE_DIRS)
 
+.PHONY: hw-demo
+hw-demo:
+	
 	# Compiling the SAURIA demo project
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(CHS_ROOT)/hw/cheshire_pkg.sv
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(CHS_ROOT)/target/sim/src/tb_cheshire_pkg.sv
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/include/sauria_demo_pkg.sv $(SAURIA_DEMO_INCLUDE_DIR)
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/target/sim/src/fixture_sauria_demo.sv $(SAURIA_DEMO_INCLUDE_DIR)
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/target/sim/src/tb_sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
 
 .PHONY: sw
 sw:
