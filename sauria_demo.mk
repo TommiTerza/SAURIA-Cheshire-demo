@@ -55,7 +55,7 @@ hw-chs:
 	# Compiling Cheshire
 	$(MAKE) -B chs-hw-all
 	$(MAKE) -B chs-sim-all
-	cd $(SAURIA_DEMO_VSIM_DIR) && vsim -c -do "source $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl; quit" > chs_compile_log.txt
+	cd $(SAURIA_DEMO_VSIM_DIR) && vsim -c -do "set BINARY ../../../sw/tests/helloworld.spm.elf; set BOOTMODE 0; set PRELMODE 1; source $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl; quit" > chs_compile_log.txt
 
 .PHONY: hw-sauria
 hw-sauria:

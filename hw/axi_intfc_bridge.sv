@@ -24,10 +24,14 @@ module axi_intfc_bridge #(
    */
   AXI_BUS.Master axi_o
 );
+
+  `include "axi/typedef.svh"
+  `include "axi/assign.svh"
+  
   // Assign from interface => local_req
-  `AXI_ASSIGN_TO_REQ(axi_req_i, axi_o)
+  `AXI_ASSIGN_FROM_REQ(axi_o, axi_req_i)
 
   // Assign local_rsp => interface
-  `AXI_ASSIGN_FROM_RESP(axi_o, axi_rsp_o)
+  `AXI_ASSIGN_TO_RESP(axi_rsp_o, axi_o)
 
 endmodule

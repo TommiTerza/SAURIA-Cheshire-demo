@@ -129,6 +129,7 @@
   `include "common_cells/registers.svh"
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
+  `include "axi/assign.svh"
 
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
@@ -303,7 +304,7 @@
     .clk_i,
     .rst_ni,
     // struct side
-    .reg_req_o (cheshire_ext_reg_req),
+    .reg_req_i (cheshire_ext_reg_req),
     .reg_rsp_o (cheshire_ext_reg_rsp),
     // interface-based side
     .axi_o (sauria_cfg_port_mst)
