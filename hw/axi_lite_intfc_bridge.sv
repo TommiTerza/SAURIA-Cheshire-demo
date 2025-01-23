@@ -163,6 +163,8 @@ module axi_lite_intfc_bridge #(
 
 endmodule
 
+`include "axi/typedef.svh"
+`include "axi/assign.svh"
 
 //----------------------------------------------------------------------------
 // Interface wrapper: if your code expects an AXI_LITE interface in Slave mode
