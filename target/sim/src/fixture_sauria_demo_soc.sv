@@ -11,7 +11,7 @@
  *       simulations, such as loading executables, reading data from UART and so on.
  */
 
-module fixture_cheshire_soc #(
+module fixture_sauria_demo_soc #(
   /// The selected simulation configuration from the `tb_cheshire_pkg`.
   parameter int unsigned SelectedCfg = 32'd0,
   parameter bit          UseDramSys  = 1'b0
