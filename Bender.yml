@@ -16,6 +16,3 @@ dependencies:
   cheshire:
     git: https://github.com/pulp-platform/cheshire
     version: 0.2.0
-  sauria:
-    git: https://github.com/sromeo98/sauria
-    rev: 11651fbc0eb939706722382bc8b33c666f2308c2

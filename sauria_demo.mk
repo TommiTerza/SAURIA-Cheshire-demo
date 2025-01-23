@@ -11,7 +11,7 @@
 SAURIA_DEMO_ROOT    ?= $(shell realpath .)
 SAURIA_DEMO_HW_DIR  := $(SAURIA_DEMO_ROOT)/hw
 SAURIA_DEMO_SW_DIR  := $(SAURIA_DEMO_ROOT)/sw
-SAURIA_DEMO_TGT_DIR := $(SAURIA_DEMO_ROOT)/target/
+SAURIA_DEMO_TGT_DIR := $(SAURIA_DEMO_ROOT)/target
 SAURIA_DEMO_XIL_DIR := $(SAURIA_DEMO_TGT_DIR)/fpga
 SAURIA_DEMO_SIM_DIR := $(SAURIA_DEMO_TGT_DIR)/sim
 SAURIA_DEMO_VSIM_DIR := $(SAURIA_DEMO_TGT_DIR)/sim/vsim
@@ -23,7 +23,7 @@ CHS_ROOT  := $(shell bender path cheshire)
 REGINTFC_ROOT  := $(shell bender path register_interface)
 
 # SAURIA defines
-SAURIA_ROOT := $(shell bender path sauria)
+SAURIA_ROOT := $(SAURIA_DEMO_ROOT)/vendor/sauria
 SAURIA_PULP_ROOT := $(SAURIA_ROOT)/pulp_platform
 SAURIA_RTL_ROOT := $(SAURIA_ROOT)/RTL
 SAURIA_INCLUDE_DIRS := +incdir+$(SAURIA_PULP_ROOT)/common_cells/include +incdir+$(SAURIA_PULP_ROOT)/axi/include
@@ -34,34 +34,52 @@ SAURIA_DEMO_INCLUDE_DIR := +incdir+$(SAURIA_DEMO_ROOT)/hw/include \
 													 +incdir+$(SAURIA_PULP_ROOT)/common_cells/include \
 													 +incdir+$(CHS_ROOT)/hw/include \
 													 +incdir+$(REGINTFC_ROOT)/include
-
+	
 # Tools defines
 BENDER_ROOT ?= $(SAURIA_DEMO_ROOT)/.bender
+
+# Correct GCC directory
+CHS_SW_GCC_BINROOT = /software/riscv/riscv64-multilib-newlib/bin
 
 # Include the Cheshire Makefile
 include $(shell bender path cheshire)/cheshire.mk
 
-.PHONY: hw-all
-hw-all:
+build-sauria:
+	# Removing pre-existing Sauria folder in vendor
+	rm -rf $(SAURIA_ROOT)
+	cd $(SAURIA_DEMO_ROOT)/vendor && git clone https://github.com/bsc-loca/sauria.git
+	cd $(SAURIA_ROOT) && git submodule update --init --recursive
+
+.PHONY: hw-chs
+hw-chs:
 	# Compiling Cheshire
 	$(MAKE) -B chs-hw-all
 	$(MAKE) -B chs-sim-all
-	vsim -c -do "source $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl; quit" > chs_compile_log.txt
+	cd $(SAURIA_DEMO_VSIM_DIR) && vsim -c -do "source $(CHS_ROOT)/target/sim/vsim/compile.cheshire_soc.tcl; quit" > chs_compile_log.txt
 
+.PHONY: hw-sauria
+hw-sauria:
 	# Compiling SAURIA core
-	vlog $(SAURIA_PULP_ROOT)/axi/src/axi_pkg.sv
-	vlog $(SAURIA_RTL_ROOT)/src/sauria_pkg.sv
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_PULP_ROOT)/axi/src/axi_pkg.sv
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_RTL_ROOT)/src/sauria_pkg.sv
 
-	PULP_DIR=$(SAURIA_PULP_ROOT) RTL_DIR=$(SAURIA_RTL_ROOT) \
-	vlog -f $(SAURIA_RTL_ROOT)/filelist.f $(SAURIA_INCLUDE_DIRS)
+.PHONY: hw-demo
+hw-demo:
+	# Preprocess the file list
+	cd $(SAURIA_DEMO_VSIM_DIR) && sed "s|\$${PULP_DIR}|$(SAURIA_PULP_ROOT)|g" $(SAURIA_RTL_ROOT)/filelist.f > prepreprocessed_filelist.f
+	cd $(SAURIA_DEMO_VSIM_DIR) && sed "s|\$${RTL_DIR}|$(SAURIA_RTL_ROOT)|g" prepreprocessed_filelist.f > preprocessed_filelist.f
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog -f preprocessed_filelist.f $(SAURIA_INCLUDE_DIRS)
 
 	# Compiling the SAURIA demo project
-	vlog $(CHS_ROOT)/hw/cheshire_pkg.sv
-	vlog $(SAURIA_DEMO_ROOT)/hw/include/sauria_demo_pkg.sv $(SAURIA_DEMO_INCLUDE_DIR)
-	vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
-	vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
-	vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(CHS_ROOT)/hw/cheshire_pkg.sv
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/include/sauria_demo_pkg.sv $(SAURIA_DEMO_INCLUDE_DIR)
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/axi_intfc_bridge.sv 
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/axi_lite_intfc_bridge.sv
+	cd $(SAURIA_DEMO_VSIM_DIR) && vlog $(SAURIA_DEMO_ROOT)/hw/sauria_demo_soc.sv $(SAURIA_DEMO_INCLUDE_DIR)
 
-.PHONY: sw-all
-sw-all:
+.PHONY: sw
+sw:
 	$(MAKE) -B chs-sw-all
+	
+.PHONY: hw-all
+hw-all: hw-chs hw-sauria hw-demo
