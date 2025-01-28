@@ -83,6 +83,10 @@ hw-demo:
 
 .PHONY: sw
 sw:
+	rm $(CHS_ROOT)/sw/lib/sauria_*
+	rm $(CHS_ROOT)/sw/tests/sauria_*
+	cpy $(SAURIA_DEMO_SW_DIR)/lib/. $(CHS_ROOT)/sw/lib
+	cpy $(SAURIA_DEMO_SW_DIR)/tests/. $(CHS_ROOT)/sw/tests
 	$(MAKE) -B chs-sw-all
 	
 .PHONY: hw-all
