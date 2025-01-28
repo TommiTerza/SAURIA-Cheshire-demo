@@ -9,7 +9,25 @@
 set TESTBENCH tb_sauria_demo_soc
 
 set CHS_ROOT [exec bender path cheshire]
-set BINARY ${CHS_ROOT}/sw/tests/helloworld.spm.elf
+
+# Handle BIN_SEL variable
+if {![info exists BIN_SEL]} {
+    set BIN_SEL 0  ;# Default value if not set
+}
+
+switch $BIN_SEL {
+    0 {
+        set BINARY "${CHS_ROOT}/sw/tests/helloworld.spm.elf"
+    }
+    1 {
+        set BINARY "${CHS_ROOT}/sw/tests/sauria_test.spm.elf"
+    }
+    default {
+        puts "Error: Invalid BIN_SEL value: $BIN_SEL"
+        exit 1
+    }
+}
+
 set BOOTMODE 0
 set PRELMODE 1
 
