@@ -91,8 +91,8 @@ sw:
 		rm $(CHS_ROOT)/sw/tests/sauria_*; \
 	fi
 
-	cpy $(SAURIA_DEMO_SW_DIR)/lib/. $(CHS_ROOT)/sw/lib
-	cpy $(SAURIA_DEMO_SW_DIR)/tests/. $(CHS_ROOT)/sw/tests
+	cp $(SAURIA_DEMO_SW_DIR)/lib/. $(CHS_ROOT)/sw/lib
+	cp $(SAURIA_DEMO_SW_DIR)/tests/. $(CHS_ROOT)/sw/tests
 	$(MAKE) -B chs-sw-all
 	
 .PHONY: hw-all
