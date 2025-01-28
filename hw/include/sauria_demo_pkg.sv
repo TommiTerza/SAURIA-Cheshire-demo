@@ -20,7 +20,7 @@ package sauria_demo_pkg;
     cheshire_pkg::cheshire_cfg_t ret = cheshire_pkg::DefaultCfg;
     
     ret.AxiExtNumSlv = 1;
-    reg.RegExtNumSlv = 1;
+    ret.RegExtNumSlv = 1;
 
     return ret;
   endfunction
