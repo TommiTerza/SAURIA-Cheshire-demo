@@ -19,7 +19,8 @@ package sauria_demo_pkg;
   function automatic cheshire_pkg::cheshire_cfg_t gen_cheshire_cfg();
     cheshire_pkg::cheshire_cfg_t ret = cheshire_pkg::DefaultCfg;
     
-    /* Apply further changes if needed */
+    ret.AxiExtNumSlv = 1;
+    reg.RegExtNumSlv = 1;
 
     return ret;
   endfunction

@@ -130,7 +130,7 @@
   `include "common_cells/assertions.svh"
   `include "cheshire/typedef.svh"
   `include "axi/assign.svh"
-
+  
   `CHESHIRE_TYPEDEF_ALL(, Cfg)
 
   /*_________________________________________________________________________________________________________________________________ */

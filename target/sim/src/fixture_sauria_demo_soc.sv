@@ -21,8 +21,9 @@ module fixture_sauria_demo_soc #(
 
   import cheshire_pkg::*;
   import tb_cheshire_pkg::*;
+  import sauria_demo_pkg::*;
 
-  localparam cheshire_cfg_t DutCfg = TbCheshireConfigs[SelectedCfg];
+  localparam cheshire_cfg_t DutCfg = gen_cheshire_cfg();;
 
   `CHESHIRE_TYPEDEF_ALL(, DutCfg)
 
