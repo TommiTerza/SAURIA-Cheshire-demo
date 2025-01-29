@@ -22,7 +22,7 @@ package sauria_demo_pkg;
 
   localparam byte_bt MemSauriaIdx  = 0;
   localparam doub_bt MemSauriaBase = 'h45000000;
-  localparam doub_bt MemSauriaSize = 'h0A000000;
+  localparam doub_bt MemSauriaSize = 'h05000000;
   localparam doub_bt MemSauriaEnd  = MemSauriaBase + MemSauriaSize;
 
   /* This function returns a Cheshire configuration. */
@@ -39,9 +39,9 @@ package sauria_demo_pkg;
     ret.RegExtRegionIdx   [0] = RegSauriaIdx;
     ret.RegExtRegionStart [0] = RegSauriaBase;
     ret.RegExtRegionEnd   [0] = RegSauriaEnd;
-    ret.RegExtRegionIdx   [0] = MemSauriaIdx;
-    ret.RegExtRegionStart [0] = MemSauriaBase;
-    ret.RegExtRegionEnd   [0] = MemSauriaEnd;
+    ret.AxiExtRegionIdx   [0] = MemSauriaIdx;
+    ret.AxiExtRegionStart [0] = MemSauriaBase;
+    ret.AxiExtRegionEnd   [0] = MemSauriaEnd;
 
     return ret;
   endfunction
