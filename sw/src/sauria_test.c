@@ -18,9 +18,15 @@
 #include "sauria_io.h"
 
 /* SAURIA base address define */
-#define SAURIA_PERIPH_START_ADDRESS 0x20000000
+#define SAURIA_REG_START_ADDRESS 0x40000000
+
+#define SAURIA_MEM_START_ADDRESS 0x45000000
 
 int main(void) {
-    writeh(0x0001, SAURIA_PERIPH_START_ADDRESS + SAURIA_CFG_REGS_GLOBAL_IEN_BIT);
+
+    *(volatile uint32_t *) (SAURIA_REG_START_ADDRESS + SAURIA_CFG_REGS_IDX1_OFFSET) = 0x1 ;
+
+    *(volatile uint32_t *) (SAURIA_MEM_START_ADDRESS + SAURIA_SRAMA_OFFSET) = 0xDEADBEEF ;
+
     return 0;
 }
