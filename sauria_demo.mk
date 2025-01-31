@@ -91,9 +91,9 @@ sw:
 		rm $(CHS_ROOT)/sw/tests/sauria_*; \
 	fi
 
-	find $(SAURIA_DEMO_SW_DIR)/lib/ -type f -exec cp {} $(CHS_ROOT)/sw/lib \;
+	find $(SAURIA_DEMO_SW_DIR)/lib/ -type f -exec cp {} $(CHS_ROOT)/sw/include \;
 
-	cp $(SAURIA_DEMO_SW_DIR)/data/* $(CHS_ROOT)/sw/lib
+	cp $(SAURIA_DEMO_SW_DIR)/data/* $(CHS_ROOT)/sw/include
 	cp $(SAURIA_DEMO_SW_DIR)/src/* $(CHS_ROOT)/sw/tests
 
 	$(MAKE) -B chs-sw-all
