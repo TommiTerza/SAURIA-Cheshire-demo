@@ -217,7 +217,7 @@
     .reg_ext_slv_req_o (cheshire_ext_reg_req),
     .reg_ext_slv_rsp_i (cheshire_ext_reg_rsp),
     // Interrupts from external devices
-    .intr_ext_i,
+    .intr_ext_i (sauria_doneintr),
     .intr_ext_o,
     // Interrupts to external harts
     .xeip_ext_o,

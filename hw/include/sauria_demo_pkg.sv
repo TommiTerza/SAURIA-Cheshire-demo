@@ -42,6 +42,7 @@ package sauria_demo_pkg;
     ret.AxiExtRegionIdx   [0] = MemSauriaIdx;
     ret.AxiExtRegionStart [0] = MemSauriaBase;
     ret.AxiExtRegionEnd   [0] = MemSauriaEnd;
+    ret.NumExtInIntrs         = 1;
 
     return ret;
   endfunction
