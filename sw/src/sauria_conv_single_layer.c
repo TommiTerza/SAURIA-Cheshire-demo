@@ -6,7 +6,7 @@
  * Author: Tommaso Terzano <tommaso.terzano@polito.it> 
  *                         <tommaso.terzano@gmail.com>
  *  
- * Info: Test of the SAURIA-Cheshire demostrator.
+ * Info: Single convolutional layer application for the SAURIA-Cheshire demonstrator.
  */
 
 #include "regs/cheshire.h"
@@ -14,11 +14,15 @@
 #include "dif/uart.h"
 #include "params.h"
 #include "util.h"
+#include <stdio.h>
+#include <string.h>
 #include "sauria_regs.h"
 #include "sauria_io.h"
 #include "sauria_util.h"
-#include <stdio.h>
-#include <string.h>
+#include "sauria.h"
+#include "sauria_approx_output_tensor_0_conv1.h"
+#include "sauria_input_tensor_conv1.h"
+#include "sauria_weight_tensor_conv1.h"
 
 #define DEBUG
 
@@ -39,6 +43,7 @@ char ret_reg_hex_conv[13];
 char ret_mem_hex_conv[13];
 uint32_t ret_mem;
 uint32_t ret_reg;
+sauria_t sauria;
 
 int main(void) {
 
@@ -46,6 +51,14 @@ int main(void) {
     uint32_t rtc_freq = *reg32(&__base_regs, CHESHIRE_RTC_FREQ_REG_OFFSET);
     uint64_t reset_freq = clint_get_core_freq(rtc_freq, 2500);
     uart_init(&__base_uart, reset_freq, __BOOT_BAUDRATE);
+
+    /* Set up the PLIC */
+    plic_Init();
+    plic_irq_set_priority(SAURIA_INTR, 1);
+    plic_irq_set_enabled(SAURIA_INTR, kPlicToggleEnabled);
+    plic_assign_external_irq_handler( SAURIA_INTR, (void *) &handler_irq_sauria);
+
+    sauria.base_addr = mmio_region_from_addr((uintptr_t)SAURIA_REG_START_ADDRESS);
 
     /* Write a value into one of SAURIA's register */
     *(volatile uint32_t *) (SAURIA_REG_START_ADDRESS + SAURIA_CFG_REGS_IDX1_OFFSET) = 0x1 ;
