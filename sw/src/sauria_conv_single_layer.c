@@ -21,7 +21,7 @@
 #include "sauria_regs.h"
 #include "sauria_io.h"
 #include "sauria_util.h"
-//#include "sauria.h"
+#include "sauria.h"
 #include "sauria_approx_output_tensor_0_conv1.h"
 #include "sauria_input_tensor_conv1.h"
 #include "sauria_weight_tensor_conv1.h"
@@ -85,6 +85,6 @@ int main(void) {
     /* Write SAURIA's IFMAP SRMA via the iDMA */
     int8_t *inputs_ptr = &input_tensor[0][0][0];
     sys_dma_memcpy((uintptr_t)(void *)(SAURIA_MEM_START_ADDRESS + SAURIA_SRAMA_OFFSET), (uintptr_t)(void *)inputs_ptr, sizeof(AB_c*A_h_padded*A_w_padded));
-    
+
     return 0;
 }
