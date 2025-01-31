@@ -22,6 +22,9 @@ switch $BIN_SEL {
     1 {
         set BINARY "${CHS_ROOT}/sw/tests/sauria_test.spm.elf"
     }
+    2 {
+        set BINARY "${CHS_ROOT}/sw/tests/sauria_conv_single_layer.spm.elf"
+    }
     default {
         puts "Error: Invalid BIN_SEL value: $BIN_SEL"
         exit 1
