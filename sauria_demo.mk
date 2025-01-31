@@ -83,17 +83,17 @@ hw-demo:
 
 .PHONY: sw
 sw:
-@if ls $(CHS_ROOT)/sw/lib/sauria 1> /dev/null 2>&1; then \
+	@if ls $(CHS_ROOT)/sw/lib/sauria 1> /dev/null 2>&1; then \
 		rm $(CHS_ROOT)/sw/lib/sauria_*; \
 	fi
 
-@if ls $(CHS_ROOT)/sw/tests/sauria_* 1> /dev/null 2>&1; then \
+	@if ls $(CHS_ROOT)/sw/tests/sauria_* 1> /dev/null 2>&1; then \
 		rm $(CHS_ROOT)/sw/tests/sauria_*; \
 	fi
 
-	cp $(SAURIA_DEMO_SW_DIR)/base/* $(CHS_ROOT)/sw/lib
+	find $(SAURIA_DEMO_SW_DIR)/lib/ -type f -exec cp {} $(CHS_ROOT)/sw/lib \;
+
 	cp $(SAURIA_DEMO_SW_DIR)/data/* $(CHS_ROOT)/sw/lib
-	cp $(SAURIA_DEMO_SW_DIR)/lib/* $(CHS_ROOT)/sw/lib
 	cp $(SAURIA_DEMO_SW_DIR)/src/* $(CHS_ROOT)/sw/tests
 
 	$(MAKE) -B chs-sw-all
