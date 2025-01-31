@@ -50,7 +50,7 @@ if { ![info exists CXX_PATH] } {
 # Default on fast simulation flags.
 if {![info exists VOPTARGS]} {
     # TODO: what does this do?
-    set VOPTARGS "-O5 +noacc=p+cheshire_soc." 
+    set VOPTARGS "-O1 +acc" 
 }
 
 set flags "-voptargs=-permissive -suppress 12110 -suppress 3009 -suppress 8386 -suppress 1323 -suppress 2912 -suppress 2732 -error 7 -cpppath ${CXX_PATH}"
