@@ -102,7 +102,6 @@ sw:
 
 .PHONY: sim-gui
 sim-gui:
-	sw
 	cd $(SAURIA_DEMO_VSIM_DIR) && vsim -gui -do "start.sauria_demo.tcl $(BIN_SEL)"
 
 .PHONY: hw-all
