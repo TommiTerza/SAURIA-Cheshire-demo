@@ -100,9 +100,11 @@ sw:
 
 	$(MAKE) -B chs-sw-all
 
+BIN_SEL ?= 0
+
 .PHONY: sim-gui
 sim-gui:
-	cd $(SAURIA_DEMO_VSIM_DIR) && vsim -gui -do "start.sauria_demo.tcl $(BIN_SEL)"
+	@cd $(SAURIA_DEMO_VSIM_DIR) && vsim -gui -do "set BIN_SEL $(BIN_SEL); source start.sauria_demo.tcl; run -all" &
 
 .PHONY: hw-all
 hw-all: hw-chs hw-sauria hw-demo

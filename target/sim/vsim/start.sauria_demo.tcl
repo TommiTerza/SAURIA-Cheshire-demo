@@ -11,9 +11,7 @@ set TESTBENCH tb_sauria_demo_soc
 set CHS_ROOT [exec bender path cheshire]
 
 # Handle BIN_SEL variable
-if {![info exists BIN_SEL]} {
-    set BIN_SEL 0  ;# Default value if not set
-}
+set BIN_SEL [lindex $argv 0]
 
 switch $BIN_SEL {
     0 {

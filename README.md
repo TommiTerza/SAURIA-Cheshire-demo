@@ -11,7 +11,7 @@ This repository contains a demonstration of the integration of the SAURIA convol
 - **`sw/`**: Software components for the SoC.
   - `data/`: Input, weight, and output tensor data files.
   - `lib/`: Utility libraries and headers for software development.
-  - `src/`: Source files for software applications, such as `sauria_conv_single_layer.c`.
+  - `src/`: Source files for software applications.
 
 - **`target/`**: Target-specific files for FPGA and simulation.
   - `fpga/`: FPGA-related files.
@@ -41,6 +41,14 @@ This repository contains a demonstration of the integration of the SAURIA convol
    make hw-all
    ```
 
+3. Build the software:
+   ```bash
+   make sw
+   ```
+
+4. Simulate SAURIA-CHESIRE demo, in two ways:
+  - Using ```make sim-gui BIN_SEL=$BIN_SEL```, with $BIN_SEL equal to _0_ for the _Hello world_ example, _1_ for a _register & SRAM_ write & read test, _2_ for a complete _single convolutional layer_ test [WORK IN PROGRESS]
+  - Sourcing *start.sauria_demo.tcl* using QuestaSim opened in target/sim/vsim, and setting the BIN_SEL before calling the tcl script
 
 ## License
 
