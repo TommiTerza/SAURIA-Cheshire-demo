@@ -30,10 +30,9 @@ This repository contains a demonstration of the integration of the SAURIA convol
 
 ## Getting Started
 
-1. Clone the repository:
+1. Set-up the project, allowing Bender to update the project's dependecies:
    ```bash
-   git clone <repository-url>
-   cd SAURIA-Cheshire-demo
+   make set-up
    ```
 
 2. Build the hardware model:

@@ -44,6 +44,9 @@ CHS_SW_GCC_BINROOT = /software/riscv/riscv64-multilib-newlib/bin
 # Include the Cheshire Makefile
 include $(shell bender path cheshire)/cheshire.mk
 
+set-up:
+	bender update
+
 update-sauria:
 	# Removing pre-existing Sauria folder in vendor
 	rm -rf $(SAURIA_ROOT)
