@@ -66,6 +66,8 @@ hw-sauria:
 	# Preprocess the file list
 	cd $(SAURIA_DEMO_VSIM_DIR) && sed "s|\$${PULP_DIR}|$(SAURIA_PULP_ROOT)|g" $(SAURIA_RTL_ROOT)/filelist.f > prepreprocessed_filelist.f
 	cd $(SAURIA_DEMO_VSIM_DIR) && sed "s|\$${RTL_DIR}|$(SAURIA_RTL_ROOT)|g" prepreprocessed_filelist.f > preprocessed_filelist.f
+	
+	# Compile the file list
 	cd $(SAURIA_DEMO_VSIM_DIR) && vlog -f preprocessed_filelist.f $(SAURIA_INCLUDE_DIRS)
 
 .PHONY: hw-demo
