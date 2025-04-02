@@ -44,7 +44,7 @@ CHS_SW_GCC_BINROOT = /software/riscv/riscv64-multilib-newlib/bin
 # Include the Cheshire Makefile
 include $(shell bender path cheshire)/cheshire.mk
 
-build-sauria:
+update-sauria:
 	# Removing pre-existing Sauria folder in vendor
 	rm -rf $(SAURIA_ROOT)
 	cd $(SAURIA_DEMO_ROOT)/vendor && git clone https://github.com/bsc-loca/sauria.git
@@ -99,6 +99,11 @@ sw:
 	cp $(SAURIA_DEMO_SW_DIR)/src/* $(CHS_ROOT)/sw/tests
 
 	$(MAKE) -B chs-sw-all
-	
+
+.PHONY: sim-gui
+sim-gui:
+	sw
+	cd $(SAURIA_DEMO_VSIM_DIR) && vsim -gui -do "start.sauria_demo.tcl $(BIN_SEL)"
+
 .PHONY: hw-all
 hw-all: hw-chs hw-sauria hw-demo
